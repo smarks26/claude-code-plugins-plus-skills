@@ -124,6 +124,42 @@ compliance are welcome; structural changes to the IS rubric are not.
 
 ---
 
+## [3.3.2] — 2026-05-12 — Agent field spec-compliance bug fixes (no architectural changes)
+
+Discovered while triaging two external-contributor PRs (#679 from `CeciliaZ030` for `aomi-labs/skills`, #680 from `ali5ter` for four external plugins): the IS agent validator was flagging two fields that ARE documented Anthropic spec fields, leading to wrong review feedback on legitimate agent submissions.
+
+### Fixed
+
+- **`color` (agent frontmatter) is a documented Anthropic field, not deprecated.** Per [code.claude.com/docs/en/sub-agents](https://code.claude.com/docs/en/sub-agents): *"Display color for the subagent in the task list and transcript. Accepts `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, or `cyan`."* Old validator placed `color` in `DEPRECATED_AGENT_FIELDS` and emitted *"Non-standard field. Not in Anthropic spec. Will be removed in future validation."* That message was wrong. Moved to `AGENT_FIELDS` with valid-color enum; agents using any of the eight allowed values now validate cleanly.
+- **`initialPrompt` (agent frontmatter) is a documented Anthropic field, not unknown.** Per the same source: *"Auto-submitted as the first user turn when this agent runs as the main session agent (via `--agent` or the `agent` setting)."* Old validator treated it as an unknown field and emitted *"Unknown field: 'initialPrompt'"*. Added to `AGENT_FIELDS` with `'string'` type. Agents using it now validate cleanly.
+- **`permissionMode: 'auto'` added to valid values.** Anthropic's documented set now includes `auto` (was previously missing). Validator's `valid` enum now: `['default', 'acceptEdits', 'auto', 'dontAsk', 'bypassPermissions', 'plan']`.
+
+### Authorization
+
+Per `SCHEMA_CHANGELOG.md` NON-NEGOTIABLE #6: *"Bug fixes that bring the validator into spec compliance are always OK to apply autonomously. Examples: accepting YAML lists for `allowed-tools`, fixing conditional-field rules to match documented defaults, adding missing documented fields like `arguments` / `paths` / `shell`. These are technical-correctness fixes — not 'spec realignment.'"* This release adds two more such fields to the registry and adds one more permissionMode value. No architectural changes; the IS 8-field enterprise required set remains unchanged.
+
+### Backward compatibility
+
+Non-breaking. Agents that previously passed at 3.3.1 still pass at 3.3.2 (same or fewer warnings). Agents that were previously WARN'd for `color`/`initialPrompt` now validate cleanly.
+
+### Cross-source verification (newest-spec wins)
+
+The fix was verified against five authoritative sources, all current as of 2026-05-12:
+
+1. **[code.claude.com/docs/en/sub-agents](https://code.claude.com/docs/en/sub-agents)** — Claude Code subagent frontmatter table lists both `color` and `initialPrompt` as documented optional fields.
+2. **[platform.claude.com/docs/en/agents-and-tools/agent-skills/overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)** — Platform-side skill spec (skills, not agents) — required fields remain `name` + `description`; max 1024 chars on description; no XML tags; no "anthropic"/"claude" reserved words in name.
+3. **[agentskills.io/specification](https://agentskills.io/specification)** — Open standard. Required: `name`, `description`. Optional: `license`, `compatibility`, `metadata`, `allowed-tools`.
+4. **[anthropics/skills/template/SKILL.md](https://github.com/anthropics/skills/blob/main/template/SKILL.md)** — Anthropic's canonical template uses only `name` + `description`.
+5. **[anthropics/skills/skills/{pdf,docx,mcp-builder,canvas-design,internal-comms,algorithmic-art}/SKILL.md](https://github.com/anthropics/skills/tree/main/skills)** — Anthropic's own six canonical skills use only `name`, `description`, `license`. They do not use `tags`/`version`/`author`/`compatibility` — those remain IS extensions intentionally additive on top of the Anthropic spec.
+
+All checks the validator currently enforces (name max 64 chars, lowercase-numbers-hyphens only, no XML tags in name/description, no reserved words "anthropic"/"claude" in name via `FORBIDDEN_WORDS`, description max 1024 chars) are confirmed against the newest source documentation and remain correct.
+
+### Validator landing
+
+Released via PR #705 (`fix/p2-agent-validator-spec-current`) which merged to `main` as commit `5debf572f` on 2026-05-12. That PR also added two related blog posts (`agents-md-cross-tool-plugin-brief.md`, `coherence-day-drift-detection-strategic-spine.md`) but did not bump `SCHEMA_VERSION` or update this changelog. This entry retroactively closes that gap.
+
+---
+
 ## [3.3.1] — 2026-04-28 — Spec-compliance bug fixes (no architectural changes)
 
 After the 3.3.0 restoration, a careful re-read of [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills) found three concrete bugs where the validator diverged from Anthropic's documented behavior. All three are pure spec-compliance fixes — no IS architectural changes.

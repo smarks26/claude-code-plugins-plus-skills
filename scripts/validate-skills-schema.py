@@ -82,7 +82,7 @@ except ImportError:
 #                       doesn't affect /-menu visibility); added ${CLAUDE_EFFORT} to
 #                       YAML_VALUE_ALLOWED_VARS.
 # See 000-docs/SCHEMA_CHANGELOG.md.
-SCHEMA_VERSION = '3.3.1'
+SCHEMA_VERSION = '3.3.2'
 
 # Validation tiers
 TIER_STANDARD = 'standard'
