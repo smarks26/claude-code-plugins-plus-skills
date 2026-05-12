@@ -957,6 +957,36 @@ sources:
       - '.git/**'
       - '*.log'
 
+  # ============================================================
+  # aomi (aomi-labs) — PR #679 / CeciliaZ030
+  # https://github.com/aomi-labs/skills
+  # Bundle: aomi-transact (drive the Aomi CLI on-chain) and
+  # aomi-build (scaffold Rust SDK crates from OpenAPI specs).
+  # ============================================================
+
+  - name: aomi
+    description: 'Aomi for AI agents — drive the Aomi CLI from natural-language prompts (chat, simulate, sign on-chain transactions with account-abstraction-first execution) and scaffold new Aomi apps from API specs. Bundle ships two skills: aomi-transact (run on-chain across 40+ DeFi/perps/CEX/social apps on EVM mainnets and L2s) and aomi-build (scaffold Rust SDK crates from OpenAPI/Swagger specs).'
+    repo: aomi-labs/skills
+    source_path: plugins/aomi
+    target_path: plugins/crypto/aomi
+    author:
+      name: aomi-labs
+      github: aomi-labs
+    license: MIT
+    category: crypto
+    verified: false
+    include:
+      - 'SKILL.md'
+      - 'README.md'
+      - 'LICENSE'
+      - 'SECURITY.md'
+      - '.claude-plugin/**'
+      - 'skills/**'
+    exclude:
+      - 'node_modules/**'
+      - '.git/**'
+      - '*.log'
+
 # Sync configuration
 config:
   # Branch to sync from (default: main)
