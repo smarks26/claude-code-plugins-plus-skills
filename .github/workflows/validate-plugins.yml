@@ -27,6 +27,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        # fetch-depth=2 + persist-credentials=true required for the
+        # "Catalog format guard" step below — it runs `git fetch origin
+        # <base_ref>` to compare against the PR's merge base. Without
+        # credentials persisted, that fetch errors with "could not read
+        # Username for github.com". Default actions/checkout@v6 behavior
+        # depth=1 doesn't include any history to compare against either.
+        with:
+          fetch-depth: 2
+          persist-credentials: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -873,12 +882,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      # REPORT-ONLY-UNTIL: 2026-06-21 (typescript-coverage-audit — bead claude-6f4o)
+      # BLOCKING — codebase passed baseline at PR #769 (2026-05-23).
+      # All 142 .ts files in plugins/ covered by a typecheck script in
+      # their enclosing package.json. Audit script excludes **/assets/**
+      # (illustrative skill-doc examples) and **/.vitepress/** (docs-site
+      # config, not part of the npm package).
       - name: Audit TypeScript files for typecheck coverage
-        # REPORT-ONLY for initial rollout — flip to blocking once each
-        # uncovered package.json has a `typecheck` script added.
         run: |
-          python3 scripts/audit-typescript-coverage.py --report-only --root plugins
+          python3 scripts/audit-typescript-coverage.py --root plugins
 
   eslint-check:
     runs-on: ubuntu-latest
